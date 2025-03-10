@@ -45,6 +45,7 @@ The Kubernetes configuration includes:
 ## Running the PoC
 
 ### 1. Start Minikube
+Run only the first time:
 
 ```sh
 minikube start --driver=docker
