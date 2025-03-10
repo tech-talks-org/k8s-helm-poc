@@ -1,15 +1,15 @@
-# PoC: Kubernetes + Dev Containers + Minikube
+# PoC: Kubernetes + Helm in Dev Container
 
-## Descrizione
-Questo progetto dimostra come configurare un'applicazione backend Node.js eseguibile in **Minikube** all'interno di un **Dev Container**.
+This project demonstrates how to set up a **Node.js backend** application running in **Minikube** inside a **Dev Container** using **Helm**.
 
-L'obiettivo è testare l'esecuzione di un'app Kubernetes in un ambiente di sviluppo locale senza dover dipendere da infrastrutture esterne.
+The goal is to test the execution of a Kubernetes app in a local development environment without relying on external infrastructure.
 
----
+## Project Structure
 
-## Struttura del Progetto
 ```
-poc-k8s-devcontainer/
+k8s-helm-devcontainer-poc/
+│── .devcontainer/
+│   ├── devcontainer.json
 │── backend/
 │   ├── index.js
 │   ├── package.json
@@ -17,158 +17,96 @@ poc-k8s-devcontainer/
 │── k8s/
 │   ├── deployment.yaml
 │   ├── service.yaml
-│── .devcontainer/
-│   ├── devcontainer.json
-│── README.md
 ```
 
----
+### Dev Container Setup
 
-## 1. Setup del Dev Container
-Il progetto utilizza Dev Containers per fornire un ambiente di sviluppo preconfigurato.
+The project uses Dev Containers to provide a preconfigured development environment.
 
-### **Configurazione in `.devcontainer/devcontainer.json`**
-```json
-{
-  "name": "Node.js",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {}
-  }
-}
-```
+We used the **VS Code Dev Container wizard** to set up the environment, selecting the necessary features.
 
----
+The `.devcontainer/devcontainer.json` file includes:
 
-## 2. Creazione del Backend
-### **File `backend/index.js`**
-```js
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
+- A **Node.js development environment**
+- The **Docker-in-Docker** feature
+- The **kubectl, Helm, and Minikube** feature
 
-app.get('/', (req, res) => {
-  res.send('Hello from Node.js backend running in Kubernetes!');
-});
+### Backend
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-```
+The backend is a simple **Node.js** application running in an Express server. It responds to HTTP requests and will be deployed inside a Kubernetes cluster.
 
-### **Dockerfile per il backend (`backend/Dockerfile`)**
-```Dockerfile
-FROM node:18
-WORKDIR /app
-COPY package.json ./
-RUN npm install
-COPY . .
-CMD ["npm", "start"]
-```
+### Kubernetes Configuration
 
----
+The Kubernetes configuration includes:
 
-## 3. Configurazione Kubernetes
-### **Deployment (`k8s/deployment.yaml`)**
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: backend
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: backend
-  template:
-    metadata:
-      labels:
-        app: backend
-    spec:
-      containers:
-        - name: backend
-          image: backend:latest
-          ports:
-            - containerPort: 3000
-          env:
-            - name: PORT
-              value: "3000"
-```
+- A **Deployment** that runs the backend container
+- A **Service** that exposes the backend within the cluster
 
-### **Service (`k8s/service.yaml`)**
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: backend-service
-spec:
-  selector:
-    app: backend
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3000
-  type: ClusterIP
-```
+## Running the PoC
 
----
+### 1. Start Minikube
 
-## 4. Esecuzione del PoC
-### **1. Avviare Minikube**
 ```sh
 minikube start --driver=docker
 ```
 
-Se ci sono errori, resettare Minikube:
-```sh
-minikube delete
-minikube start --driver=docker
-```
+### 2. Switch to Minikube's Docker daemon
 
-### **2. Passare al daemon Docker di Minikube**
+When you use Minikube with the Docker driver, it creates a virtual environment with its own Docker daemon inside the Minikube VM. Connecting to Minikube’s Docker daemon allows you to build and run Docker images directly inside Minikube’s environment, avoiding the need to push images to an external registry.
+
 ```sh
 eval $(minikube docker-env)
 ```
 
-### **3. Buildare l'immagine Docker per il backend**
+### 3. Build the Docker image for the backend
+
 ```sh
 docker build -t backend:latest ./backend
 ```
 
-### **4. Applicare le configurazioni Kubernetes**
+### 4. Apply Kubernetes configurations
+
 ```sh
 kubectl apply -f k8s/
 ```
 
-### **5. Verificare lo stato del Pod**
+### 5. Check Pod status
+
 ```sh
 kubectl get pods
 ```
-Dovrebbe restituire un output simile a:
+
+Expected output:
+
 ```
 NAME                       READY   STATUS    RESTARTS   AGE
 backend-55978757c7-z994t   1/1     Running   0          12s
 ```
 
-### **6. Eseguire il forward della porta per testare l'API**
+### 6. Port-forward to test the API
+
 ```sh
 kubectl port-forward service/backend-service 8080:80
 ```
-Ora puoi testare l'endpoint in un browser o con `curl`:
+
+Now test the endpoint in a browser or with `curl`:
+
 ```sh
 curl http://localhost:8080/
 ```
-Dovresti ricevere la risposta:
+
+Expected response:
+
 ```
 Hello from Node.js backend running in Kubernetes!
 ```
 
----
+## Troubleshooting
 
-## 5. Troubleshooting
-### **Errore `ImagePullBackOff`**
-Se Kubernetes non trova l'immagine, assicurati di aver buildato nel contesto di Minikube:
+### `ImagePullBackOff` Error
+
+If Kubernetes cannot find the image, ensure you have built it in the Minikube context:
+
 ```sh
 eval $(minikube docker-env)
 docker build -t backend:latest ./backend
@@ -176,22 +114,15 @@ kubectl delete pod --all
 kubectl apply -f k8s/
 ```
 
-### **Errore `connection refused` in Minikube**
-Se Minikube non parte correttamente:
+### **`connection refused` Error in Minikube**
+
+If Minikube does not start correctly:
+
 ```sh
 minikube delete
 minikube start --driver=docker
 ```
 
----
+## Next Steps
 
-## 6. Conclusioni
-Questo PoC mostra come eseguire un backend Node.js in Kubernetes utilizzando un Dev Container per l'ambiente di sviluppo.
-
-**Prossimi passi:**
-- Automatizzare il processo con `skaffold`
-- Integrare un registry locale per la gestione delle immagini
-- Estendere l'architettura con più servizi
-
-🚀 Buon coding!
-
+- Helm integration
