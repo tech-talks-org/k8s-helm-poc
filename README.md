@@ -110,7 +110,7 @@ Use the command `helm create backend`
 
 Edit the chart to suit your app (e.g., update values.yaml, set image name to backend:latest).
 
-### 3. Install the chart
+### 2. Install the chart
 
 `helm install my-backend ./k8s-helm/backend`
 
@@ -118,11 +118,11 @@ If the release already exists:
 
 `helm upgrade my-backend ./k8s-helm/backend`
 
-### 4. Check the running pods
+### 3. Check the running pods
 
 `kubectl get pods`
 
-### 5. Port-forward via Helm label selectors
+### 4. Port-forward via Helm label selectors
 
 ```
 export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=backend,app.kubernetes.io/instance=my-backend" -o jsonpath="{.items[0].metadata.name}")
@@ -160,4 +160,7 @@ minikube start --driver=docker
 
 ## Next Steps
 
-- Helm integration
+- Helm different enviroments 
+- K8s spike 
+- Push on registry (Harbor?)
+- Argo CD 
