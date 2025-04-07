@@ -102,6 +102,40 @@ Expected response:
 Hello from Node.js backend running in Kubernetes!
 ```
 
+## Helm Integration
+
+### 1. Create the helm folder 
+
+Use the command `helm create backend`
+
+Edit the chart to suit your app (e.g., update values.yaml, set image name to backend:latest).
+
+### 2. Install the chart
+
+`helm install my-backend ./k8s-helm/backend`
+
+If the release already exists:
+
+`helm upgrade my-backend ./k8s-helm/backend`
+
+### 3. Check the running pods
+
+`kubectl get pods`
+
+### 4. Port-forward via Helm label selectors
+
+```
+export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=backend,app.kubernetes.io/instance=my-backend" -o jsonpath="{.items[0].metadata.name}")
+export CONTAINER_PORT=$(kubectl get pod $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+kubectl port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
+Then visit: http://localhost:8080
+
+
+
+
+
+
 ## Troubleshooting
 
 ### `ImagePullBackOff` Error
@@ -126,4 +160,7 @@ minikube start --driver=docker
 
 ## Next Steps
 
-- Helm integration
+- Helm different environments 
+- K8s spike 
+- Push on registry (Harbor?)
+- Argo CD 
