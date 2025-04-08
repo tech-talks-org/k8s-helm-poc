@@ -131,11 +131,91 @@ kubectl port-forward $POD_NAME 8080:$CONTAINER_PORT
 ```
 Then visit: http://localhost:8080
 
+## Using Helm for different environments
 
+We created two environment-specific values files:
 
+values-test.yaml — for local development
 
+values-prod.yaml — for production deployment
 
+These files customize key settings like image name, tag, pull policy, environment variables, and resource limits.
 
+### Sample values-test.yaml
+
+```
+image:
+  repository: backend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+env:
+  NODE_ENV: development
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+```
+
+### Sample values-prod.yaml
+```
+image:
+  repository: andreagernoneapuliasoft/tech-talks
+  tag: prod
+  pullPolicy: Always
+
+env:
+  NODE_ENV: production
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+```
+
+## Helm Installation
+`helm install my-backend ./k8s-helm/backend -f ./k8s-helm/backend/values-test.yaml`
+
+For updates:
+`helm upgrade my-backend ./k8s-helm/backend -f ./k8s-helm/backend/values-test.yaml`
+
+## Pod Status Inspection
+`kubectl get pods`
+## 4. Dynamic Port Forwarding via Labels
+```
+export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=backend,app.kubernetes.io/instance=my-backend" -o jsonpath="{.items[0].metadata.name}")
+export CONTAINER_PORT=$(kubectl get pod $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+kubectl port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
+Test at http://localhost:8080
+
+## Production Image Deployment via Docker Hub
+Due to the pullPolicy: Always setting in values-prod.yaml, images must be hosted on a remote registry, as local builds cannot be pulled by the cluster. We opted to push to Docker Hub:
+
+### 1. Authenticate to Docker Hub
+`docker login`
+### 2. Tag Image for Remote Registry
+`docker tag backend:latest andreagernoneapuliasoft/tech-talks:prod`
+### 3. Push Image to Repository
+`docker push andreagernoneapuliasoft/tech-talks:prod`
+### 4. Deploy to Cluster
+`helm upgrade --install my-backend-prod ./k8s-helm/backend -f ./k8s-helm/backend/values-prod.yaml`
+### 5. Pod Verification and Port Forwarding
+```
+kubectl get pods
+kubectl port-forward svc/my-backend-prod 8080:80
+```
+### 6. Final Validation
+`curl http://localhost:8080/`
+
+--------------
 ## Troubleshooting
 
 ### `ImagePullBackOff` Error
