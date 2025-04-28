@@ -1,0 +1,84 @@
+# Kubernetes Namespace Experiment – Basic Level
+
+## Objective
+Understand how to create, use, and isolate resources in different namespaces.
+
+---
+
+## Step 1: Create a namespace
+
+```bash
+kubectl create namespace test-namespace
+```
+
+Check that it exists:
+
+```bash
+kubectl get namespaces
+```
+
+---
+
+## Step 2: Deploy something inside the namespace
+
+Example: a simple `nginx` pod.
+
+```bash
+kubectl run nginx-test --image=nginx --restart=Never -n test-namespace
+```
+
+Verify the pod is present:
+
+```bash
+kubectl get pods -n test-namespace
+```
+
+---
+
+## Step 3: Try not to see it from the default namespace
+
+If you run:
+
+```bash
+kubectl get pods
+```
+
+(without specifying `-n`), **you won't see the pod**!
+Each namespace isolates its own resources.
+
+---
+
+## Step 4: Delete only the namespace
+
+```bash
+kubectl delete namespace test-namespace
+```
+
+**Note:** Kubernetes will automatically destroy all resources (pods, services, configmaps, etc.) associated with that namespace.
+
+---
+
+## (Optional) Step 5: Use a temporary namespace context
+
+To avoid specifying `-n` every time:
+
+```bash
+kubectl config set-context --current --namespace=test-namespace
+```
+
+From that moment on, all commands will default to `test-namespace` without needing to specify it explicitly.
+
+---
+
+## What you learn by doing this
+- How to isolate resources in Kubernetes
+- How to switch views between different environments
+- How to easily clean up groups of resources
+
+---
+
+### Bonus
+After completing this experiment, you can try:
+- Creating **two different namespaces**
+- Deploying **two apps with the same names**
+- Verifying that **they don't interfere** thanks to namespace isolation.
