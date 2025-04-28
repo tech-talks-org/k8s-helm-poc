@@ -240,7 +240,8 @@ minikube start --driver=docker
 
 ## Next Steps
 
-- Helm different environments 
-- K8s spike 
-- Push on registry (Harbor?)
+- K8s ingress spike
+- K8s namespace
+- K8s ecosystem 
+- Registry study
 - Argo CD 
