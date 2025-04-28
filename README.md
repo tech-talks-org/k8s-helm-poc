@@ -237,6 +237,8 @@ If Minikube does not start correctly:
 minikube delete
 minikube start --driver=docker
 ```
+## Following docs
+- [Namespaces](./kb/2025-04-28_k8s_namespace)
 
 ## Next Steps
 
@@ -245,3 +247,5 @@ minikube start --driver=docker
 - K8s ecosystem 
 - Registry study
 - Argo CD 
+
+
