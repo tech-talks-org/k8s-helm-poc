@@ -252,6 +252,7 @@ Devops:
 UI:
 - Design Tokens 
 - Web components kit
+- BDD & e2e
 
 System/Architecture Design: 
 - Feature Flags
