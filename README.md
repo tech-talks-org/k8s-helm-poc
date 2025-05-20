@@ -245,6 +245,7 @@ minikube start --driver=docker
 Devops:
 - Ingress spike kong 
 - Ingress pod/deployment level differences and needs
+- K8s Monitoring and Observability
 - K8s ecosystem 
 - Registry study
 - Argo CD 
