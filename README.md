@@ -242,10 +242,24 @@ minikube start --driver=docker
 
 ## Next Steps
 
-- K8s ingress spike
-- K8s namespace
+Devops:
+- Ingress spike kong 
+- Ingress pod/deployment level differences and needs
+- K8s Monitoring and Observability
 - K8s ecosystem 
 - Registry study
 - Argo CD 
 
+UI:
+- Design Tokens 
+- Web components kit
+- BDD & e2e
 
+System/Architecture Design: 
+- Feature Flags
+
+Future Skills: 
+- Problem solver
+- Product-minded Architect
+- Designer di soluzioni
+- Strategist
